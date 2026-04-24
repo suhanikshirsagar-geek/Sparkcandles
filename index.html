@@ -1,0 +1,2332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Custom Candle Configurator — Spark Candles</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #1a1814;
+    --deep: #ffffff;
+    --surface: #f7f5f2;
+    --card: #ffffff;
+    --border: #e2ddd7;
+    --border-light: #c8c1b8;
+    --gold: #9a6f38;
+    --gold-light: #b8893e;
+    --cream: #211e1a;
+    --cream-dim: #6e6560;
+    --white: #ffffff;
+    --red: #b04030;
+    --green: #3d7a50;
+    --radius: 4px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: #ffffff;
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── SUBTLE PAPER TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.97);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cream);
+    text-decoration: none;
+  }
+
+  .logo span { color: var(--gold); }
+
+  header nav {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--cream-dim);
+    text-transform: uppercase;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 60%, rgba(160,120,64,0.06) 0%, transparent 70%);
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 700px; }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+    opacity: 0.5;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 8vw, 80px);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--cream);
+    margin-bottom: 24px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 15px;
+    color: var(--cream-dim);
+    margin-bottom: 48px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.8;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 40px;
+    background: var(--gold);
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    background: var(--gold-light);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary svg { transition: transform var(--transition); }
+  .btn-primary:hover svg { transform: translateX(4px); }
+
+  /* ── TRUST BAR ── */
+  .trust-bar {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    background: #ffffff;
+    flex-wrap: wrap;
+  }
+
+  .trust-item {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .trust-item svg { color: var(--gold); flex-shrink: 0; }
+
+  /* ── CONFIGURATOR SECTION ── */
+  #configurator {
+    padding: 80px 24px 120px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── PROGRESS STEPS ── */
+  .progress-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 64px;
+    position: relative;
+  }
+
+  .progress-nav::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    width: 60%;
+    height: 1px;
+    background: var(--border);
+    z-index: 0;
+  }
+
+  .step-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-pill:first-child { border-radius: 40px 0 0 40px; border-right: none; }
+  .step-pill:last-child { border-radius: 0 40px 40px 0; border-left: none; }
+  .step-pill:nth-child(2) { border-left: none; border-right: none; }
+
+  .step-pill.active {
+    background: var(--card);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .step-pill.completed {
+    border-color: var(--green);
+  }
+
+  .step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .step-pill.completed .step-num {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+
+  .step-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ── STEP PANELS ── */
+  .step-panel {
+    display: none;
+    animation: fadeUp 0.4s ease forwards;
+  }
+
+  .step-panel.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── STEP 1: CUSTOMISER ── */
+  .configurator-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 48px;
+    align-items: start;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: var(--white);
+  }
+
+  .section-desc {
+    color: var(--cream-dim);
+    font-size: 13px;
+    margin-bottom: 28px;
+    line-height: 1.7;
+  }
+
+  /* Candle Style Grid */
+  .style-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .style-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 14px 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .style-card:hover {
+    border-color: var(--border-light);
+    background: var(--surface);
+  }
+
+  .style-card.selected {
+    border-color: var(--gold);
+    background: rgba(160,120,64,0.06);
+  }
+
+  .style-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 18px;
+    height: 18px;
+    background: var(--gold);
+    color: #ffffff;
+    border-radius: 50%;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  .style-code {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .style-name {
+    font-size: 11px;
+    color: var(--cream-dim);
+    line-height: 1.4;
+  }
+
+  .style-moq {
+    font-size: 10px;
+    color: var(--red);
+    margin-top: 4px;
+    opacity: 0.85;
+  }
+
+  /* Candle Vessel SVG Preview */
+  .preview-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px 32px;
+    position: sticky;
+    top: 100px;
+  }
+
+  .preview-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .candle-preview-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+    min-height: 220px;
+    align-items: center;
+    position: relative;
+  }
+
+  .candle-svg-container {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+  }
+
+  .logo-overlay {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 36px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    transition: box-shadow 0.2s;
+    z-index: 10;
+  }
+
+  .logo-overlay:active { cursor: grabbing; }
+  .logo-overlay.dragging {
+    box-shadow: 0 0 0 1px rgba(201,169,110,0.6);
+    cursor: grabbing;
+  }
+
+  .logo-overlay.center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+  .logo-overlay.lower  { top: 65%; left: 50%; transform: translate(-50%, -50%); }
+  .logo-overlay.upper  { top: 30%; left: 50%; transform: translate(-50%, -50%); }
+  .logo-overlay.vertical { top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-90deg); }
+
+  .logo-overlay img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    opacity: 0.85;
+  }
+
+  .logo-placeholder {
+    width: 60px;
+    height: 24px;
+    border: 1px dashed rgba(201,169,110,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-placeholder span {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    opacity: 0.6;
+    text-transform: uppercase;
+  }
+
+  /* Pricing tiers */
+  .price-tiers {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .price-tier {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .price-tier:hover {
+    border-color: var(--border-light);
+    background: var(--surface);
+  }
+
+  .price-tier.active {
+    border-color: var(--gold);
+    background: rgba(201,169,110,0.07);
+  }
+
+  .price-tier.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--gold);
+  }
+
+  .price-tier.disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .tier-qty {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--cream-dim);
+    text-transform: uppercase;
+  }
+
+  .tier-right {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .tier-unit-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .tier-per {
+    font-size: 11px;
+    color: var(--cream-dim);
+  }
+
+  .tier-save {
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 0.08em;
+    margin-left: 6px;
+  }
+
+  .tier-total-note {
+    font-size: 10px;
+    color: var(--cream-dim);
+    text-align: center;
+    margin-bottom: 14px;
+    opacity: 0.8;
+    min-height: 14px;
+  }
+
+  .price-header {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .price-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Controls */
+  .control-group { margin-bottom: 24px; }
+
+  .control-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .required-star { color: var(--gold); margin-left: 2px; }
+
+  /* Position controls */
+  .position-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .pos-btn {
+    padding: 10px 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--cream-dim);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .pos-btn:hover { border-color: var(--border-light); color: var(--cream); }
+  .pos-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(201,169,110,0.08); }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 1px dashed var(--border-light);
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    background: var(--card);
+    position: relative;
+  }
+
+  .upload-zone:hover { border-color: var(--gold); background: rgba(201,169,110,0.04); }
+
+  .upload-zone input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon { color: var(--gold); margin-bottom: 10px; }
+  .upload-text { font-size: 12px; color: var(--cream-dim); }
+  .upload-hint { font-size: 10px; color: var(--cream-dim); opacity: 0.6; margin-top: 4px; }
+
+  /* Qty input */
+  .qty-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .qty-btn {
+    width: 44px;
+    height: 44px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--cream);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .qty-btn:hover { background: var(--surface); border-color: var(--border-light); }
+
+  .qty-input {
+    width: 100%;
+    height: 44px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: none;
+    border-right: none;
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+  }
+
+  .qty-input:focus { border-color: var(--gold); }
+
+  .moq-warning {
+    margin-top: 8px;
+    font-size: 11px;
+    padding: 8px 12px;
+    display: none;
+  }
+
+  .moq-warning.error { display: block; background: rgba(196,92,74,0.1); border: 1px solid rgba(196,92,74,0.3); color: #e07868; }
+  .moq-warning.enterprise { display: block; background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.3); color: var(--gold); }
+
+  /* ── STEP 2: FORM ── */
+  .form-layout {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-group { margin-bottom: 16px; }
+
+  label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-bottom: 8px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="number"],
+  textarea, select {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color var(--transition);
+    appearance: none;
+    border-radius: 0;
+  }
+
+  input:focus, textarea:focus, select:focus { border-color: var(--gold); }
+  input::placeholder, textarea::placeholder { color: var(--cream-dim); opacity: 0.5; }
+
+  textarea { resize: vertical; min-height: 100px; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23b8b0a0' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+
+  /* Packaging checkboxes */
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .check-item:hover { border-color: var(--border-light); }
+  .check-item.checked { border-color: var(--gold); background: rgba(201,169,110,0.06); }
+
+  .check-item input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    accent-color: var(--gold);
+    background: transparent;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .check-code {
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 500;
+    flex-shrink: 0;
+    width: 16px;
+  }
+
+  .check-label {
+    font-size: 11px;
+    color: var(--cream-dim);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  /* File upload in step 2 */
+  .upload-zone-sm {
+    border: 1px dashed var(--border-light);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    background: var(--card);
+    position: relative;
+  }
+
+  .upload-zone-sm:hover { border-color: var(--gold); }
+  .upload-zone-sm input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+  /* Proof toggle */
+  .toggle-group {
+    display: flex;
+    gap: 0;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--cream-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+  }
+
+  .toggle-btn:first-child { border-right: none; }
+  .toggle-btn.active {
+    background: rgba(201,169,110,0.1);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  /* Production timeline */
+  .timeline-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+
+  .timeline-title {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+
+  .timeline-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .timeline-row:last-child { border-bottom: none; }
+  .timeline-qty { font-size: 12px; color: var(--cream-dim); }
+  .timeline-time { font-size: 12px; color: var(--cream); font-weight: 500; }
+  .timeline-active { color: var(--gold); }
+
+  /* ── STEP 3: REVIEW ── */
+  .review-layout { max-width: 760px; margin: 0 auto; }
+
+  .review-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .review-head {
+    padding: 14px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .review-head-title {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .review-edit {
+    font-size: 11px;
+    color: var(--cream-dim);
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .review-edit:hover { color: var(--gold); }
+
+  .review-body { padding: 20px; }
+
+  .review-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .review-row:last-child { border-bottom: none; }
+  .review-key { font-size: 12px; color: var(--cream-dim); }
+  .review-val { font-size: 12px; color: var(--cream); text-align: right; max-width: 60%; }
+
+  .review-total {
+    background: rgba(201,169,110,0.06);
+    border: 1px solid var(--gold);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .review-total-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+  }
+
+  .review-total-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--gold);
+  }
+
+  .review-total-note { font-size: 11px; color: var(--cream-dim); margin-top: 4px; }
+
+  /* Enterprise Banner */
+  .enterprise-banner {
+    background: rgba(201,169,110,0.06);
+    border: 1px solid var(--gold);
+    padding: 32px;
+    text-align: center;
+    display: none;
+    margin-bottom: 24px;
+  }
+
+  .enterprise-banner.visible { display: block; }
+
+  .enterprise-banner h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--gold-light);
+    margin-bottom: 8px;
+  }
+
+  .enterprise-banner p { font-size: 13px; color: var(--cream-dim); margin-bottom: 20px; }
+
+  /* Navigation buttons */
+  .step-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--cream-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-back:hover { border-color: var(--border-light); color: var(--cream); }
+
+  .btn-next {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 40px;
+    background: var(--gold);
+    border: none;
+    color: var(--black);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-next:hover { background: var(--gold-light); }
+  .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── SUCCESS ── */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 80px 40px;
+    animation: fadeUp 0.5s ease;
+  }
+
+  .success-screen.visible { display: block; }
+
+  .success-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 1px solid var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 32px;
+    color: var(--green);
+  }
+
+  .success-screen h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 40px;
+    font-weight: 300;
+    color: var(--white);
+    margin-bottom: 16px;
+  }
+
+  .success-screen p { font-size: 14px; color: var(--cream-dim); max-width: 400px; margin: 0 auto 32px; line-height: 1.8; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 32px 0;
+  }
+
+  .form-section-head {
+    margin: 32px 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .form-section-head h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .form-section-head p { font-size: 12px; color: var(--cream-dim); }
+
+  /* Qty for step 2 */
+  .qty-field {
+    display: flex;
+    gap: 16px;
+  }
+
+  .qty-field > div { flex: 1; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .configurator-layout { grid-template-columns: 1fr; }
+    .preview-panel { position: static; }
+    .style-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-grid-2 { grid-template-columns: 1fr; }
+    .checkbox-grid { grid-template-columns: 1fr; }
+    header { padding: 16px 24px; }
+    .trust-bar { gap: 24px; padding: 16px 24px; }
+    .progress-nav::before { display: none; }
+  }
+
+  /* ── FLAME ANIMATIONS ── */
+  @keyframes flame-outer {
+    0%   { d: path("M8,30 C6,22 2,18 4,10 C6,4 8,0 8,0 C8,0 10,4 12,10 C14,18 10,22 8,30Z"); opacity: 0.95; }
+    25%  { d: path("M8,30 C5,21 1,17 3,9  C5,3  9,0 8,0  C8,0  11,3 13,9  C15,17 11,21 8,30Z"); opacity: 0.88; }
+    50%  { d: path("M8,30 C7,23 3,19 5,11 C7,5  8,0 8,0  C8,0  9,5  11,11 C13,19 9,23  8,30Z"); opacity: 1;    }
+    75%  { d: path("M8,30 C6,20 2,16 4,8  C6,2  8,0 8,0  C8,0  10,2 14,8  C16,16 10,20 8,30Z"); opacity: 0.9;  }
+    100% { d: path("M8,30 C6,22 2,18 4,10 C6,4 8,0 8,0 C8,0 10,4 12,10 C14,18 10,22 8,30Z"); opacity: 0.95; }
+  }
+  @keyframes flame-mid {
+    0%   { d: path("M8,28 C6,22 4,18 5,12 C6,7 8,4 8,4 C8,4 10,7 11,12 C12,18 10,22 8,28Z"); }
+    33%  { d: path("M8,28 C7,23 5,19 6,13 C7,8  8,4 8,4 C8,4 9,8  10,13 C11,19 9,23  8,28Z"); }
+    66%  { d: path("M8,28 C5,21 3,17 4,11 C5,6 8,4 8,4  C8,4  11,6 12,11 C13,17 11,21 8,28Z"); }
+    100% { d: path("M8,28 C6,22 4,18 5,12 C6,7 8,4 8,4 C8,4 10,7 11,12 C12,18 10,22 8,28Z"); }
+  }
+  @keyframes flame-core {
+    0%,100% { transform: scaleX(1) translateY(0);   opacity: 0.9; }
+    40%     { transform: scaleX(0.85) translateY(1px); opacity: 1;   }
+    70%     { transform: scaleX(1.1) translateY(-1px); opacity: 0.8; }
+  }
+  @keyframes glow-pulse {
+    0%,100% { opacity: 0.35; r: 10; }
+    50%     { opacity: 0.55; r: 13; }
+  }
+  @keyframes smoke-rise {
+    0%   { transform: translateY(0)   scaleX(1);   opacity: 0.18; }
+    100% { transform: translateY(-18px) scaleX(2.5); opacity: 0;   }
+  }
+  .flame-glow   { animation: glow-pulse 1.8s ease-in-out infinite; }
+  .flame-outer  { animation: flame-outer 1.6s ease-in-out infinite; transform-origin: 8px 30px; }
+  .flame-mid    { animation: flame-mid  1.2s ease-in-out infinite; transform-origin: 8px 28px; }
+  .flame-core   { animation: flame-core 0.9s ease-in-out infinite; transform-origin: 8px 26px; }
+  .smoke-puff   { animation: smoke-rise 2.4s ease-out infinite; transform-origin: center bottom; }
+  .smoke-puff:nth-child(2) { animation-delay: 0.8s; }
+  .smoke-puff:nth-child(3) { animation-delay: 1.6s; }
+
+  /* selection count badge */
+  .selection-badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--gold);
+    color: var(--black);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+  }
+
+  .no-selection-hint {
+    text-align: center;
+    padding: 24px;
+    color: var(--cream-dim);
+    font-size: 12px;
+    font-style: italic;
+    border: 1px dashed var(--border);
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a href="#" class="logo">Spark <span>Candles</span></a>
+  <nav>Custom Configurator</nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Custom Candle Configurator</div>
+    <h1>Your Brand.<br><em>Our Craft.</em></h1>
+    <p class="hero-sub">Design your bespoke candle collection in minutes. Upload your artwork, choose your vessels, and receive a detailed quote within 24 hours.</p>
+    <a href="#configurator" class="btn-primary">
+      Begin Customising
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-item">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    Women-Owned Business (WBE)
+  </div>
+  <div class="trust-item">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    3–8 Week Lead Times
+  </div>
+  <div class="trust-item">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12l5 5L20 7"/></svg>
+    Free Shipping USA & Canada
+  </div>
+  <div class="trust-item">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    All Natural Soy Wax
+  </div>
+  <div class="trust-item">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    Hand-Poured USA & Canada
+  </div>
+</div>
+
+<!-- CONFIGURATOR -->
+<section id="configurator">
+
+  <!-- PROGRESS NAV -->
+  <div class="progress-nav">
+    <div class="step-pill active" id="pill-1" onclick="goToStep(1)">
+      <div class="step-num">1</div>
+      <span class="step-label">Customise</span>
+    </div>
+    <div class="step-pill" id="pill-2" onclick="goToStep(2)">
+      <div class="step-num">2</div>
+      <span class="step-label">Your Details</span>
+    </div>
+    <div class="step-pill" id="pill-3" onclick="goToStep(3)">
+      <div class="step-num">3</div>
+      <span class="step-label">Review & Submit</span>
+    </div>
+  </div>
+
+  <!-- SUCCESS SCREEN -->
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12l5 5L20 7"/></svg>
+    </div>
+    <h2>Quote Request Received</h2>
+    <p>Thank you! Our team will review your custom candle brief and respond with pricing within 24 hours. Check your inbox for a confirmation email.</p>
+    <a href="#" class="btn-primary" onclick="resetForm(event)">Start a New Configuration</a>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       STEP 1: CUSTOMISER
+  ═══════════════════════════════════════ -->
+  <div class="step-panel active" id="step-1">
+    <div class="configurator-layout">
+
+      <!-- LEFT: SELECTIONS -->
+      <div>
+        <div class="section-label">Step 01</div>
+        <h2 class="section-title">Choose Your Candle Styles</h2>
+        <p class="section-desc">Select one or more vessel styles. Your quote will include all selected styles. MOQ applies per style/scent (SKU).</p>
+
+        <div class="style-grid" id="style-grid">
+          <!-- Cards rendered by JS -->
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- LOGO UPLOAD -->
+        <div class="control-group">
+          <span class="control-label">Upload Your Logo / Artwork</span>
+          <div class="upload-zone" id="upload-zone">
+            <input type="file" id="logo-file" accept="image/*,.pdf,.ai,.eps" onchange="handleLogoUpload(event)">
+            <div class="upload-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="upload-text">Drop your file here or click to browse</div>
+            <div class="upload-hint">Supports PNG, JPG, PDF, AI, EPS — Max 20MB</div>
+          </div>
+          <div id="logo-filename" style="margin-top: 8px; font-size: 11px; color: var(--gold); display: none;"></div>
+        </div>
+
+        <!-- LOGO POSITION -->
+        <div class="control-group">
+          <span class="control-label">Logo Placement on Vessel</span>
+          <div class="position-grid">
+            <button class="pos-btn active" onclick="setPosition('center', this)">Centered</button>
+            <button class="pos-btn" onclick="setPosition('lower', this)">Lower Third</button>
+            <button class="pos-btn" onclick="setPosition('upper', this)">Upper Third</button>
+            <button class="pos-btn" onclick="setPosition('vertical', this)">Vertical</button>
+          </div>
+        </div>
+
+        <!-- QUANTITY -->
+        <div class="control-group">
+          <span class="control-label">Quantity Per Style (Units)<span class="required-star">*</span></span>
+          <div class="qty-wrap">
+            <button class="qty-btn" onclick="changeQty(-25)">−</button>
+            <input type="number" class="qty-input" id="qty-input" value="100" min="1" oninput="updateMOQ()">
+            <button class="qty-btn" onclick="changeQty(25)">+</button>
+          </div>
+          <div class="moq-warning" id="moq-warning"></div>
+        </div>
+
+        <!-- FRAGRANCES -->
+        <div class="control-group">
+          <span class="control-label">Number of Different Fragrances<span class="required-star">*</span></span>
+          <select id="fragrance-count">
+            <option value="">Select number of scents...</option>
+            <option value="1">1 Fragrance</option>
+            <option value="2">2 Fragrances</option>
+            <option value="3">3 Fragrances</option>
+            <option value="4">4 Fragrances</option>
+            <option value="5">5 Fragrances</option>
+            <option value="6+">6+ Fragrances (specify in notes)</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: PREVIEW PANEL -->
+      <div class="preview-panel">
+        <div class="preview-label">Live Preview</div>
+
+        <div class="candle-preview-wrap" id="preview-wrap">
+          <div class="no-selection-hint" id="no-selection-hint">Select a style to see your preview</div>
+          <div class="candle-svg-container" id="candle-container" style="display:none;">
+            <!-- SVG injected by JS -->
+            <div class="logo-overlay center" id="logo-overlay">
+              <div class="logo-placeholder"><span>Your Logo</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="price-header">Pricing by quantity</div>
+        <div class="price-tiers" id="price-tiers">
+          <!-- Rendered by JS -->
+          <div style="font-size:12px; color:var(--cream-dim); padding: 12px; text-align:center; border: 1px dashed var(--border);">Select a style to see pricing tiers</div>
+        </div>
+        <div class="tier-total-note" id="tier-total-note"></div>
+
+        <div id="production-hint" style="display:none;">
+          <div class="timeline-box">
+            <div class="timeline-title">Estimated Production Time</div>
+            <div id="prod-time-text" style="font-size: 13px; color: var(--cream); line-height: 1.6;"></div>
+          </div>
+        </div>
+
+        <div id="selected-count" style="font-size: 11px; color: var(--cream-dim); text-align: center; margin-top: 8px;"></div>
+        <div id="drag-hint" style="display:none; font-size: 10px; color: var(--gold); text-align: center; margin-top: 6px; opacity: 0.7; letter-spacing: 0.08em;">
+          ↕ Drag your logo to reposition
+        </div>
+      </div>
+    </div>
+
+    <div class="step-nav">
+      <div></div>
+      <button class="btn-next" onclick="validateStep1()">
+        Continue to Details
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       STEP 2: YOUR DETAILS
+  ═══════════════════════════════════════ -->
+  <div class="step-panel" id="step-2">
+    <div class="form-layout">
+      <div class="section-label">Step 02</div>
+      <h2 class="section-title">Your Project Details</h2>
+      <p class="section-desc">Tell us about your project so we can prepare an accurate quote for your custom candle collection.</p>
+
+      <!-- CONTACT INFO -->
+      <div class="form-section-head">
+        <h3>Contact Information</h3>
+        <p>We'll use these details to send your quote and project updates.</p>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>First Name <span class="required-star">*</span></label>
+          <input type="text" id="first-name" placeholder="Jane">
+        </div>
+        <div class="form-group">
+          <label>Last Name <span class="required-star">*</span></label>
+          <input type="text" id="last-name" placeholder="Smith">
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Email Address <span class="required-star">*</span></label>
+          <input type="email" id="email" placeholder="jane@company.com">
+        </div>
+        <div class="form-group">
+          <label>Phone Number <span class="required-star">*</span></label>
+          <input type="tel" id="phone" placeholder="+1 (555) 000-0000">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Delivery Location — City, State / Province <span class="required-star">*</span></label>
+        <input type="text" id="delivery-location" placeholder="e.g. New York, NY or Toronto, ON">
+      </div>
+
+      <!-- ORDER DETAILS -->
+      <div class="form-section-head">
+        <h3>Order Details</h3>
+        <p>Quantity and fragrance breakdown for accurate pricing.</p>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Total Candles Needed <span class="required-star">*</span></label>
+          <input type="number" id="total-qty" placeholder="e.g. 250">
+        </div>
+        <div class="form-group">
+          <label>Number of Fragrances <span class="required-star">*</span></label>
+          <select id="total-fragrances">
+            <option value="">Select...</option>
+            <option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6+</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- DELIVERY DATE -->
+      <div class="form-group">
+        <label>When Do You Need Your Candles? <span class="required-star">*</span></label>
+        <input type="date" id="delivery-date">
+      </div>
+
+      <!-- PACKAGING -->
+      <div class="form-section-head">
+        <h3>Packaging Options</h3>
+        <p>Choose any packaging additions. Select as many as you like.</p>
+      </div>
+
+      <div class="checkbox-grid" id="packaging-grid">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- ARTWORK UPLOAD -->
+      <div class="form-section-head">
+        <h3>Artwork & Files</h3>
+        <p>Upload your logo, brand guidelines, or design references. Complimentary design services are included.</p>
+      </div>
+
+      <div class="upload-zone-sm">
+        <input type="file" id="artwork-file" accept="image/*,.pdf,.ai,.eps,.zip" multiple>
+        <div style="color: var(--gold); margin-bottom: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div style="font-size: 12px; color: var(--cream-dim);">Upload logo, brand kit, or references</div>
+        <div style="font-size: 10px; color: var(--cream-dim); opacity: 0.6; margin-top: 4px;">PNG, JPG, PDF, AI, EPS, ZIP — Multiple files accepted</div>
+      </div>
+
+      <!-- PROOF PREFERENCE -->
+      <div class="form-section-head">
+        <h3>Proof Preference</h3>
+        <p>Would you like to receive a digital mockup proof before we begin production?</p>
+      </div>
+
+      <div class="toggle-group" id="proof-toggle">
+        <button class="toggle-btn active" onclick="setProof('yes', this)">✓ Yes — Send me a proof before production</button>
+        <button class="toggle-btn" onclick="setProof('no', this)">Proceed without proof</button>
+      </div>
+
+      <!-- PRODUCTION TIMELINE -->
+      <div style="margin-top: 28px;">
+        <div class="timeline-box">
+          <div class="timeline-title">Standard Production Timelines</div>
+          <div class="timeline-row">
+            <span class="timeline-qty">Up to 500 units (standard styles)</span>
+            <span class="timeline-time">~3 weeks from artwork approval</span>
+          </div>
+          <div class="timeline-row">
+            <span class="timeline-qty">Custom colour glass / printed packaging</span>
+            <span class="timeline-time">~6 weeks from artwork approval</span>
+          </div>
+          <div class="timeline-row">
+            <span class="timeline-qty">500–1,000+ units</span>
+            <span class="timeline-time">~8 weeks from artwork approval</span>
+          </div>
+          <div style="margin-top: 12px; font-size: 11px; color: var(--cream-dim);">Rush production is available for all projects — mention your deadline in the notes below.</div>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="form-section-head">
+        <h3>Additional Notes</h3>
+        <p>Any specific requirements, inspirations, rush timelines, or details about your project.</p>
+      </div>
+
+      <div class="form-group">
+        <textarea id="notes" placeholder="e.g. Corporate gifting for 500 employees, branded with our logo in gold foil, needed by December 1st. We have specific Pantone colour requirements..."></textarea>
+      </div>
+
+    </div>
+
+    <div class="step-nav">
+      <button class="btn-back" onclick="goToStep(1)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 12l-4-4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back
+      </button>
+      <button class="btn-next" onclick="validateStep2()">
+        Review My Quote
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       STEP 3: REVIEW & SUBMIT
+  ═══════════════════════════════════════ -->
+  <div class="step-panel" id="step-3">
+    <div class="review-layout">
+      <div class="section-label">Step 03</div>
+      <h2 class="section-title">Review Your Configuration</h2>
+      <p class="section-desc">Please check all details before submitting your quote request. Our team will respond within 24 hours.</p>
+
+      <!-- ENTERPRISE REDIRECT -->
+      <div class="enterprise-banner" id="enterprise-banner">
+        <h3>Enterprise Order Detected</h3>
+        <p>Your order quantity exceeds 1,000 units. Orders of this scale require a dedicated consultation for accurate pricing, lead time planning, and logistics coordination.</p>
+        <button class="btn-primary" onclick="alert('Enterprise contact form — integrate with CRM')">Contact Our Enterprise Team</button>
+      </div>
+
+      <!-- REVIEW: CANDLE STYLES -->
+      <div class="review-section">
+        <div class="review-head">
+          <span class="review-head-title">Selected Styles</span>
+          <button class="review-edit" onclick="goToStep(1)">Edit</button>
+        </div>
+        <div class="review-body" id="review-styles"></div>
+      </div>
+
+      <!-- REVIEW: ARTWORK & PLACEMENT -->
+      <div class="review-section">
+        <div class="review-head">
+          <span class="review-head-title">Artwork & Placement</span>
+          <button class="review-edit" onclick="goToStep(1)">Edit</button>
+        </div>
+        <div class="review-body" id="review-artwork"></div>
+      </div>
+
+      <!-- REVIEW: CONTACT -->
+      <div class="review-section">
+        <div class="review-head">
+          <span class="review-head-title">Contact Information</span>
+          <button class="review-edit" onclick="goToStep(2)">Edit</button>
+        </div>
+        <div class="review-body" id="review-contact"></div>
+      </div>
+
+      <!-- REVIEW: ORDER -->
+      <div class="review-section">
+        <div class="review-head">
+          <span class="review-head-title">Order Details</span>
+          <button class="review-edit" onclick="goToStep(2)">Edit</button>
+        </div>
+        <div class="review-body" id="review-order"></div>
+      </div>
+
+      <!-- REVIEW: PACKAGING -->
+      <div class="review-section" id="review-pkg-section">
+        <div class="review-head">
+          <span class="review-head-title">Packaging Additions</span>
+          <button class="review-edit" onclick="goToStep(2)">Edit</button>
+        </div>
+        <div class="review-body" id="review-packaging"></div>
+      </div>
+
+      <!-- ESTIMATED QUOTE -->
+      <div class="review-total">
+        <div>
+          <div class="review-total-label">Estimated Price Range</div>
+          <div class="review-total-note" id="review-total-note">Based on selected styles and quantity</div>
+        </div>
+        <div>
+          <div class="review-total-val" id="review-total-val">—</div>
+        </div>
+      </div>
+
+      <div style="font-size: 12px; color: var(--cream-dim); line-height: 1.8; margin-bottom: 32px; padding: 16px 20px; background: var(--card); border: 1px solid var(--border);">
+        <strong style="color: var(--cream); display: block; margin-bottom: 6px;">What Happens Next?</strong>
+        After submitting, our team will review your brief and respond within 24 hours with a detailed quote including itemised pricing, production timeline, and a complimentary design mockup preview.
+      </div>
+
+    </div>
+
+    <div class="step-nav">
+      <button class="btn-back" onclick="goToStep(2)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 12l-4-4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back
+      </button>
+      <button class="btn-next" onclick="submitForm()">
+        Submit Quote Request
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+</section>
+
+<script>
+
+// ── DATA ──────────────────────────────────────────────────────────────────
+
+const STYLES = [
+  { code: 'A', name: 'Custom 10oz Matte Black or Matte White Glass w/ Logo Imprint', moq: 100, price: 18, type: 'glass-tall', color: '#2a2a2a' },
+  { code: 'B', name: 'Custom 10oz Matte Black or Matte White Glass w/ Label', moq: 100, price: 16, type: 'glass-tall', color: '#2a2a2a' },
+  { code: 'C', name: 'Custom 10oz Clear or Frosted Clear Glass w/ Logo Imprint', moq: 100, price: 18, type: 'glass-tall', color: '#8ab8c8' },
+  { code: 'D', name: 'Custom 10oz Clear or Frosted Clear Glass w/ Label', moq: 100, price: 16, type: 'glass-tall', color: '#8ab8c8' },
+  { code: 'E', name: 'Custom 10oz Pantone Color Glass w/ Logo Imprint', moq: 250, price: 22, type: 'glass-tall', color: '#c9a96e', note: 'MOQ 250' },
+  { code: 'F', name: 'Custom 8oz Amber or Clear Glass Jar', moq: 100, price: 15, type: 'glass-short', color: '#c4873a' },
+  { code: 'G', name: 'Custom 8oz Matte Black Glass Jar', moq: 100, price: 15, type: 'glass-short', color: '#1a1a1a' },
+  { code: 'H', name: 'Custom 8oz Black Tin', moq: 100, price: 13, type: 'tin-tall', color: '#1a1a1a' },
+  { code: 'I', name: 'Custom 8oz Paint Can', moq: 100, price: 14, type: 'paint-can', color: '#3a3a3a' },
+  { code: 'J', name: 'Custom 6oz Black or White Glass w/ Logo Imprint', moq: 100, price: 14, type: 'glass-short', color: '#2a2a2a' },
+  { code: 'K', name: 'Custom 6oz Black or White Glass w/ Label', moq: 100, price: 12, type: 'glass-short', color: '#2a2a2a' },
+  { code: 'L', name: 'Custom 6oz Pantone Color Glass w/ Logo Imprint', moq: 250, price: 17, type: 'glass-short', color: '#c9a96e', note: 'MOQ 250' },
+  { code: 'M', name: 'Custom 4oz Black Tin', moq: 100, price: 10, type: 'tin-short', color: '#1a1a1a' },
+  { code: 'N', name: 'Custom 4oz Gold or Silver Tin', moq: 100, price: 11, type: 'tin-short', color: '#c9a96e' },
+  { code: 'O', name: 'Custom 4oz Matte Black Glass Jar', moq: 100, price: 12, type: 'glass-short', color: '#1a1a1a' },
+  { code: 'P', name: 'Custom 4oz Amber or Clear Glass Jar', moq: 100, price: 11, type: 'glass-short', color: '#c4873a' },
+  { code: 'Q', name: 'Custom 2oz Gold Tin', moq: 100, price: 8, type: 'tin-short', color: '#c9a96e' },
+  { code: 'R', name: 'Custom 1oz Gold Tin', moq: 100, price: 6, type: 'tin-short', color: '#c9a96e' },
+  { code: 'S', name: 'Custom 15oz 3-Wick Black or White Glass w/ Logo Imprint', moq: 100, price: 24, type: 'glass-wide', color: '#1a1a1a' },
+  { code: 'T', name: 'Custom 15oz 3-Wick Pantone Color Glass w/ Logo Imprint', moq: 250, price: 28, type: 'glass-wide', color: '#c9a96e', note: 'MOQ 250' },
+  { code: 'U', name: 'Special Source a Unique Vessel', moq: 500, price: null, type: 'special', color: '#555', note: 'MOQ 250–500' },
+];
+
+const PACKAGING = [
+  { code: 'A', label: 'Add a Blank Gift Box' },
+  { code: 'B', label: 'Add Custom Label to Blank Gift Box' },
+  { code: 'C', label: 'Add Custom Printed Gift Box' },
+  { code: 'D', label: 'Add Custom Printed Large Gift Box' },
+  { code: 'E', label: 'Add Custom Printed Corrugated Mailer Box' },
+  { code: 'F', label: 'Add a Custom Notecard' },
+  { code: 'G', label: 'Add Burlap Gift Bag' },
+  { code: 'H', label: 'Add Premium Label Finishes (Textures, Embossing, Metallic Foil, etc.)' },
+  { code: 'I', label: 'Add Satin Ribbon to Gift Box' },
+  { code: 'J', label: 'Add Custom Wax Seal' },
+  { code: 'K', label: 'Add Custom Printed Matchboxes' },
+  { code: 'L', label: 'Add Custom Rechargeable Electric Lighter' },
+  { code: 'M', label: 'Add Wood Lids' },
+  { code: 'N', label: 'Add Flat Metal Lids' },
+  { code: 'O', label: 'Add Custom Dust Cover' },
+  { code: 'P', label: 'Add Coloured Wax' },
+  { code: 'Q', label: 'Add Wick Trimmers' },
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+
+let state = {
+  selectedStyles: [],
+  logoFile: null,
+  logoPosition: 'center',
+  qty: 100,
+  fragrances: '',
+  proofPreference: 'yes',
+  // Step 2
+  firstName: '', lastName: '', email: '', phone: '',
+  deliveryLocation: '', deliveryDate: '',
+  totalQty: '', totalFragrances: '',
+  packagingSelected: [],
+  notes: '',
+};
+
+let currentStep = 1;
+
+// ── SVG CANDLE GENERATORS ──────────────────────────────────────────────────
+
+function makeFlame(cx, wickTop, wickBot, scale=1) {
+  const s = scale;
+  // All flame paths are defined relative to cx=8, then translated
+  const tx = cx - 8*s;
+  return `
+    <defs>
+      <filter id="flame-blur-${cx}" x="-80%" y="-80%" width="260%" height="260%">
+        <feGaussianBlur stdDeviation="1.8"/>
+      </filter>
+      <filter id="glow-filter-${cx}" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="3.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <line x1="${cx}" y1="${wickTop}" x2="${cx}" y2="${wickBot}" stroke="#9a8060" stroke-width="${1.2*s}"/>
+    <!-- ambient glow -->
+    <circle class="flame-glow" cx="${cx}" cy="${wickTop - 6*s}" r="${10*s}" fill="#ff9500" opacity="0.35" filter="url(#flame-blur-${cx})"/>
+    <!-- outer flame -->
+    <g filter="url(#glow-filter-${cx})" transform="translate(${tx} ${wickTop - 30*s}) scale(${s})">
+      <path class="flame-outer"
+        d="M8,30 C6,22 2,18 4,10 C6,4 8,0 8,0 C8,0 10,4 12,10 C14,18 10,22 8,30Z"
+        fill="url(#og-${cx})" />
+    </g>
+    <!-- mid flame -->
+    <g transform="translate(${tx} ${wickTop - 28*s}) scale(${s})">
+      <path class="flame-mid"
+        d="M8,28 C6,22 4,18 5,12 C6,7 8,4 8,4 C8,4 10,7 11,12 C12,18 10,22 8,28Z"
+        fill="url(#mg-${cx})" opacity="0.9"/>
+    </g>
+    <!-- inner core -->
+    <g transform="translate(${cx - 3*s} ${wickTop - 14*s}) scale(${s})">
+      <ellipse class="flame-core" cx="3" cy="7" rx="2.8" ry="7" fill="url(#cg-${cx})" opacity="0.95"/>
+    </g>
+    <!-- smoke puffs -->
+    <ellipse class="smoke-puff" cx="${cx}" cy="${wickTop - 34*s}" rx="${2.5*s}" ry="${1.5*s}" fill="#999" opacity="0.15"/>
+    <ellipse class="smoke-puff" cx="${cx + 1*s}" cy="${wickTop - 34*s}" rx="${2*s}" ry="${1.2*s}" fill="#aaa" opacity="0.12"/>
+    <ellipse class="smoke-puff" cx="${cx - 1*s}" cy="${wickTop - 34*s}" rx="${1.8*s}" ry="${1*s}" fill="#888" opacity="0.1"/>
+  `;
+}
+
+function flameGradients(cx) {
+  return `
+    <linearGradient id="og-${cx}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#fff4a0" stop-opacity="0.95"/>
+      <stop offset="30%"  stop-color="#ffcc00"/>
+      <stop offset="65%"  stop-color="#ff7200"/>
+      <stop offset="100%" stop-color="#ff3d00" stop-opacity="0.6"/>
+    </linearGradient>
+    <linearGradient id="mg-${cx}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#fffde0"/>
+      <stop offset="40%"  stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#ff8c00" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="cg-${cx}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="60%"  stop-color="#fff8c0"/>
+      <stop offset="100%" stop-color="#ffe066" stop-opacity="0.6"/>
+    </linearGradient>
+  `;
+}
+
+function getCandleSVG(style) {
+  const c = style.color;
+  const t = style.type;
+  const lighter = lightenColor(c, 40);
+  const darker = darkenColor(c, 30);
+
+  if (t === 'glass-tall') {
+    return `<svg width="110" height="210" viewBox="0 0 110 210" xmlns="http://www.w3.org/2000/svg">
+      <defs>${flameGradients(55)}</defs>
+      ${makeFlame(55, 28, 38)}
+      <rect x="22" y="40" width="66" height="150" rx="5" fill="${c}" stroke="${darker}" stroke-width="1.2"/>
+      <rect x="22" y="40" width="66" height="12" rx="3" fill="${lighter}" opacity="0.25"/>
+      <rect x="22" y="182" width="66" height="8" rx="2" fill="${darker}"/>
+      <rect x="28" y="54" width="54" height="108" fill="${lighter}" opacity="0.055" rx="2"/>
+      <rect x="28" y="54" width="10" height="108" fill="${lighter}" opacity="0.08" rx="2"/>
+    </svg>`;
+  }
+  if (t === 'glass-short') {
+    return `<svg width="100" height="170" viewBox="0 0 100 170" xmlns="http://www.w3.org/2000/svg">
+      <defs>${flameGradients(50)}</defs>
+      ${makeFlame(50, 26, 35, 0.9)}
+      <rect x="16" y="37" width="68" height="108" rx="6" fill="${c}" stroke="${darker}" stroke-width="1.2"/>
+      <rect x="16" y="37" width="68" height="12" rx="4" fill="${lighter}" opacity="0.25"/>
+      <rect x="14" y="138" width="72" height="7" rx="2" fill="${darker}"/>
+      <rect x="22" y="51" width="56" height="82" fill="${lighter}" opacity="0.06" rx="2"/>
+      <rect x="22" y="51" width="9" height="82" fill="${lighter}" opacity="0.09" rx="2"/>
+    </svg>`;
+  }
+  if (t === 'glass-wide') {
+    return `<svg width="150" height="170" viewBox="0 0 150 170" xmlns="http://www.w3.org/2000/svg">
+      <defs>${flameGradients(32)}${flameGradients(75)}${flameGradients(118)}</defs>
+      ${makeFlame(32, 26, 34, 0.85)}
+      ${makeFlame(75, 26, 34, 0.85)}
+      ${makeFlame(118, 26, 34, 0.85)}
+      <rect x="8" y="36" width="134" height="110" rx="5" fill="${c}" stroke="${darker}" stroke-width="1.2"/>
+      <rect x="8" y="36" width="134" height="12" rx="3" fill="${lighter}" opacity="0.25"/>
+      <rect x="6" y="138" width="138" height="8" rx="2" fill="${darker}"/>
+      <rect x="14" y="50" width="122" height="82" fill="${lighter}" opacity="0.055" rx="2"/>
+      <rect x="14" y="50" width="12" height="82" fill="${lighter}" opacity="0.09" rx="2"/>
+    </svg>`;
+  }
+  if (t === 'tin-tall') {
+    return `<svg width="100" height="170" viewBox="0 0 100 170" xmlns="http://www.w3.org/2000/svg">
+      <defs>${flameGradients(50)}</defs>
+      ${makeFlame(50, 26, 36, 0.9)}
+      <rect x="18" y="38" width="64" height="112" fill="${c}" stroke="${darker}" stroke-width="1.5"/>
+      <rect x="16" y="36" width="68" height="9" fill="${lighter}" opacity="0.35"/>
+      <rect x="16" y="142" width="68" height="8" fill="${darker}"/>
+      <rect x="24" y="49" width="52" height="87" fill="${lighter}" opacity="0.05"/>
+      <rect x="24" y="49" width="8" height="87" fill="${lighter}" opacity="0.08"/>
+    </svg>`;
+  }
+  if (t === 'tin-short') {
+    return `<svg width="90" height="130" viewBox="0 0 90 130" xmlns="http://www.w3.org/2000/svg">
+      <defs>${flameGradients(45)}</defs>
+      ${makeFlame(45, 22, 30, 0.78)}
+      <rect x="12" y="32" width="66" height="76" fill="${c}" stroke="${darker}" stroke-width="1.5"/>
+      <rect x="10" y="30" width="70" height="8" fill="${lighter}" opacity="0.35"/>
+      <rect x="10" y="100" width="70" height="8" fill="${darker}"/>
+      <rect x="18" y="41" width="54" height="56" fill="${lighter}" opacity="0.06"/>
+      <rect x="18" y="41" width="8" height="56" fill="${lighter}" opacity="0.09"/>
+    </svg>`;
+  }
+  if (t === 'paint-can') {
+    return `<svg width="110" height="180" viewBox="0 0 110 180" xmlns="http://www.w3.org/2000/svg">
+      <defs>${flameGradients(55)}</defs>
+      ${makeFlame(55, 28, 38)}
+      <ellipse cx="55" cy="42" rx="36" ry="7" fill="${lighter}" opacity="0.45"/>
+      <rect x="19" y="42" width="72" height="116" fill="${c}" stroke="${darker}" stroke-width="1"/>
+      <ellipse cx="55" cy="158" rx="36" ry="7" fill="${darker}"/>
+      <path d="M36 30 Q55 22 74 30" stroke="${lighter}" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <rect x="26" y="55" width="58" height="90" fill="${lighter}" opacity="0.05" rx="1"/>
+      <rect x="26" y="55" width="9" height="90" fill="${lighter}" opacity="0.08" rx="1"/>
+    </svg>`;
+  }
+  // special
+  return `<svg width="110" height="190" viewBox="0 0 110 190" xmlns="http://www.w3.org/2000/svg">
+    <defs>${flameGradients(55)}</defs>
+    ${makeFlame(55, 28, 40)}
+    <path d="M22 42 Q20 85 24 148 Q30 168 55 170 Q80 168 86 148 Q90 85 88 42 Z" fill="${c}" stroke="${darker}" stroke-width="1.5"/>
+    <path d="M22 42 Q20 58 24 65 Q30 72 55 72 Q80 72 86 65 Q90 58 88 42 Z" fill="${lighter}" opacity="0.22"/>
+    <path d="M28 58 Q26 90 29 140 Q32 158 55 160" stroke="${lighter}" stroke-width="8" fill="none" opacity="0.07" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function lightenColor(hex, amount) {
+  const num = parseInt(hex.replace('#',''), 16);
+  const r = Math.min(255, (num >> 16) + amount);
+  const g = Math.min(255, ((num >> 8) & 0xff) + amount);
+  const b = Math.min(255, (num & 0xff) + amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+function darkenColor(hex, amount) {
+  const num = parseInt(hex.replace('#',''), 16);
+  const r = Math.max(0, (num >> 16) - amount);
+  const g = Math.max(0, ((num >> 8) & 0xff) - amount);
+  const b = Math.max(0, (num & 0xff) - amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+// ── RENDER STYLE GRID ──────────────────────────────────────────────────────
+
+function renderStyleGrid() {
+  const grid = document.getElementById('style-grid');
+  grid.innerHTML = STYLES.map(s => `
+    <div class="style-card" id="style-${s.code}" onclick="toggleStyle('${s.code}')">
+      <div class="style-code">${s.code}</div>
+      <div class="style-name">${s.name}</div>
+      ${s.note ? `<div class="style-moq">${s.note} units</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function toggleStyle(code) {
+  const idx = state.selectedStyles.indexOf(code);
+  if (idx === -1) {
+    state.selectedStyles.push(code);
+  } else {
+    state.selectedStyles.splice(idx, 1);
+  }
+  // Update cards
+  STYLES.forEach(s => {
+    const el = document.getElementById('style-' + s.code);
+    if (el) el.classList.toggle('selected', state.selectedStyles.includes(s.code));
+  });
+  updatePreview();
+  updatePrice();
+}
+
+// ── PREVIEW ────────────────────────────────────────────────────────────────
+
+function updatePreview() {
+  const noHint = document.getElementById('no-selection-hint');
+  const container = document.getElementById('candle-container');
+  const countEl = document.getElementById('selected-count');
+
+  if (state.selectedStyles.length === 0) {
+    noHint.style.display = 'block';
+    container.style.display = 'none';
+    countEl.textContent = '';
+    return;
+  }
+
+  noHint.style.display = 'none';
+  container.style.display = 'flex';
+  document.getElementById('drag-hint').style.display = 'block';
+
+  // Show the last selected style
+  const lastCode = state.selectedStyles[state.selectedStyles.length - 1];
+  const style = STYLES.find(s => s.code === lastCode);
+  container.innerHTML = `
+    ${getCandleSVG(style)}
+    <div class="logo-overlay ${state.logoPosition}" id="logo-overlay">
+      ${state.logoFile
+        ? `<img src="${state.logoFile}" alt="Your Logo">`
+        : `<div class="logo-placeholder"><span>Your Logo</span></div>`
+      }
+    </div>
+  `;
+
+  countEl.textContent = state.selectedStyles.length > 1
+    ? `${state.selectedStyles.length} styles selected — showing style ${lastCode}`
+    : `Style ${lastCode} selected`;
+
+  // Init drag after DOM update
+  requestAnimationFrame(initLogoDrag);
+}
+
+// ── LOGO DRAG ──────────────────────────────────────────────────────────────
+
+let dragState = { active: false, startX: 0, startY: 0, origLeft: 0, origTop: 0 };
+
+function initLogoDrag() {
+  const overlay = document.getElementById('logo-overlay');
+  const container = document.getElementById('candle-container');
+  if (!overlay || !container) return;
+
+  // Remove old listeners by replacing the node
+  const fresh = overlay.cloneNode(true);
+  overlay.parentNode.replaceChild(fresh, overlay);
+  const el = document.getElementById('logo-overlay');
+
+  // Set initial absolute position from CSS preset if not already dragged
+  if (!el.dataset.dragged) {
+    const rect = el.getBoundingClientRect();
+    const pRect = container.getBoundingClientRect();
+    el.style.left = (rect.left - pRect.left + rect.width / 2) + 'px';
+    el.style.top  = (rect.top  - pRect.top  + rect.height / 2) + 'px';
+    el.style.transform = 'translate(-50%, -50%)';
+    // Remove preset class so absolute positioning takes over
+    el.className = 'logo-overlay';
+    el.dataset.dragged = 'true';
+  }
+
+  function onDown(e) {
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    dragState = {
+      active: true,
+      startX: clientX,
+      startY: clientY,
+      origLeft: parseFloat(el.style.left) || 0,
+      origTop:  parseFloat(el.style.top)  || 0,
+    };
+    el.classList.add('dragging');
+  }
+
+  function onMove(e) {
+    if (!dragState.active) return;
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const dx = clientX - dragState.startX;
+    const dy = clientY - dragState.startY;
+
+    const pRect = container.getBoundingClientRect();
+    const hw = el.offsetWidth  / 2;
+    const hh = el.offsetHeight / 2;
+
+    const newLeft = Math.max(hw, Math.min(pRect.width  - hw, dragState.origLeft + dx));
+    const newTop  = Math.max(hh, Math.min(pRect.height - hh, dragState.origTop  + dy));
+
+    el.style.left = newLeft + 'px';
+    el.style.top  = newTop  + 'px';
+
+    // Save position to state for review
+    state.logoPosition = `custom (${Math.round((newLeft/pRect.width)*100)}%, ${Math.round((newTop/pRect.height)*100)}%)`;
+  }
+
+  function onUp() {
+    dragState.active = false;
+    el.classList.remove('dragging');
+  }
+
+  el.addEventListener('mousedown',  onDown, { passive: false });
+  el.addEventListener('touchstart', onDown, { passive: false });
+  document.addEventListener('mousemove', onMove, { passive: false });
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('mouseup',  onUp);
+  document.addEventListener('touchend', onUp);
+}
+
+// ── PRICING ────────────────────────────────────────────────────────────────
+
+const PRICE_TIERS = [
+  { label: '100 – 249 units',  min: 100,  max: 249,  mult: 0.94 },
+  { label: '250 – 499 units',  min: 250,  max: 499,  mult: 0.88 },
+  { label: '500 – 999 units',  min: 500,  max: 999,  mult: 0.82 },
+  { label: '1,000+ units',     min: 1000, max: null,  mult: null, enterprise: true },
+];
+
+function updatePrice() {
+  const qty = parseInt(document.getElementById('qty-input').value) || 0;
+  const tiersEl = document.getElementById('price-tiers');
+  const totalNote = document.getElementById('tier-total-note');
+  const prodHint = document.getElementById('production-hint');
+  const prodText = document.getElementById('prod-time-text');
+
+  if (state.selectedStyles.length === 0) {
+    tiersEl.innerHTML = `<div style="font-size:12px;color:var(--cream-dim);padding:12px;text-align:center;border:1px dashed var(--border);">Select a style to see pricing tiers</div>`;
+    totalNote.textContent = '';
+    prodHint.style.display = 'none';
+    return;
+  }
+
+  const lastCode = state.selectedStyles[state.selectedStyles.length - 1];
+  const style = STYLES.find(s => s.code === lastCode);
+  const base = style.price;
+
+  const activeTierIdx = PRICE_TIERS.findIndex(t => qty >= t.min && (t.max === null || qty <= t.max));
+
+  tiersEl.innerHTML = PRICE_TIERS.map((t, i) => {
+    const isBelowMOQ = t.min < style.moq && !t.enterprise;
+    const isActive = i === activeTierIdx;
+
+    let rightHtml = '', saveHtml = '';
+    if (t.enterprise) {
+      rightHtml = `<span style="font-family:'DM Sans',sans-serif;font-size:15px;color:var(--gold-light);">Custom</span>`;
+    } else if (!base) {
+      rightHtml = `<span style="font-family:'DM Sans',sans-serif;font-size:15px;">Quote</span>`;
+    } else {
+      const unit = Math.round(base * t.mult);
+      const savePct = Math.round((1 - t.mult) * 100);
+      rightHtml = `<span class="tier-unit-price">$${unit}</span><span class="tier-per">/unit</span>`;
+      if (savePct > 0) saveHtml = `<span class="tier-save">Save ${savePct}%</span>`;
+    }
+
+    const moqTag = isBelowMOQ
+      ? `<span style="font-size:9px;color:var(--red);margin-left:6px;">(below MOQ)</span>`
+      : '';
+
+    return `<div
+      class="price-tier ${isActive ? 'active' : ''} ${isBelowMOQ ? 'disabled' : ''}"
+      onclick="${t.enterprise ? "selectTier(1000," + i + ")" : "selectTier(" + t.min + "," + i + ")"}"
+      title="${t.enterprise ? 'Contact for enterprise pricing' : 'Click to set quantity to ' + t.min.toLocaleString() + ' units'}">
+      <span class="tier-qty">${t.label}${moqTag}</span>
+      <div class="tier-right">${rightHtml}${saveHtml}</div>
+    </div>`;
+  }).join('');
+
+  // Total note
+  if (activeTierIdx >= 0 && !PRICE_TIERS[activeTierIdx].enterprise && base) {
+    const unit = Math.round(base * PRICE_TIERS[activeTierIdx].mult);
+    totalNote.textContent = `Est. total for ${qty.toLocaleString()} units: $${(unit * qty).toLocaleString()}`;
+  } else if (PRICE_TIERS[activeTierIdx]?.enterprise) {
+    totalNote.textContent = 'Enterprise — dedicated account management included';
+  } else {
+    totalNote.textContent = qty < 100 ? 'Enter quantity to see your tier' : '';
+  }
+
+  // Production time
+  let prodMsg = '';
+  if (qty >= 1000) prodMsg = '~8 weeks from artwork approval.';
+  else if (['E','L','T'].includes(style.code)) prodMsg = '~6 weeks (custom colour glass).';
+  else if (qty >= 500) prodMsg = '~8 weeks from artwork approval for 500+ units.';
+  else prodMsg = '~3 weeks from artwork approval.';
+  prodHint.style.display = 'block';
+  prodText.textContent = prodMsg + ' Rush options available — mention in notes.';
+}
+
+function selectTier(minQty, tierIdx) {
+  const input = document.getElementById('qty-input');
+  input.value = minQty;
+  state.qty = minQty;
+  updateMOQ();
+  // Flash the qty input gold to confirm selection
+  input.style.transition = 'border-color 0s';
+  input.style.borderColor = 'var(--gold)';
+  setTimeout(() => {
+    input.style.transition = 'border-color 0.6s ease';
+    input.style.borderColor = '';
+  }, 50);
+  setTimeout(() => { input.style.transition = ''; }, 700);
+}
+
+function updateMOQ() {
+  const qty = parseInt(document.getElementById('qty-input').value) || 0;
+  state.qty = qty;
+  const warning = document.getElementById('moq-warning');
+  warning.className = 'moq-warning';
+  warning.textContent = '';
+
+  if (state.selectedStyles.length === 0) { updatePrice(); return; }
+
+  const lastCode = state.selectedStyles[state.selectedStyles.length - 1];
+  const style = STYLES.find(s => s.code === lastCode);
+
+  if (qty >= 1000) {
+    warning.className = 'moq-warning enterprise';
+    warning.textContent = '⭐ 1,000+ unit order — enterprise pricing tier unlocked. See volume table below.';
+  } else if (qty < style.moq) {
+    warning.className = 'moq-warning error';
+    warning.textContent = `Minimum order for this style is ${style.moq} units per SKU.`;
+  }
+
+  updatePrice();
+}
+
+function changeQty(delta) {
+  const input = document.getElementById('qty-input');
+  const current = parseInt(input.value) || 0;
+  input.value = Math.max(1, current + delta);
+  updateMOQ();
+}
+
+// ── LOGO UPLOAD ────────────────────────────────────────────────────────────
+
+function handleLogoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const nameEl = document.getElementById('logo-filename');
+  nameEl.style.display = 'block';
+  nameEl.textContent = `✓ ${file.name}`;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    state.logoFile = ev.target.result;
+    updatePreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function setPosition(pos, btn) {
+  state.logoPosition = pos;
+  document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Reset drag so preset class takes effect
+  const el = document.getElementById('logo-overlay');
+  if (el) {
+    delete el.dataset.dragged;
+    el.style.left = '';
+    el.style.top = '';
+    el.style.transform = '';
+    el.className = 'logo-overlay ' + pos;
+    requestAnimationFrame(initLogoDrag);
+  }
+}
+
+// ── PACKAGING ─────────────────────────────────────────────────────────────
+
+function renderPackaging() {
+  const grid = document.getElementById('packaging-grid');
+  grid.innerHTML = PACKAGING.map(p => `
+    <label class="check-item" id="pkg-${p.code}">
+      <input type="checkbox" value="${p.code}" onchange="togglePackaging('${p.code}', this)">
+      <span class="check-code">${p.code}</span>
+      <span class="check-label">${p.label}</span>
+    </label>
+  `).join('');
+}
+
+function togglePackaging(code, checkbox) {
+  const item = document.getElementById('pkg-' + code);
+  if (checkbox.checked) {
+    state.packagingSelected.push(code);
+    item.classList.add('checked');
+  } else {
+    state.packagingSelected = state.packagingSelected.filter(c => c !== code);
+    item.classList.remove('checked');
+  }
+}
+
+function setProof(val, btn) {
+  state.proofPreference = val;
+  document.querySelectorAll('#proof-toggle .toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+
+function goToStep(n) {
+  if (n < 1 || n > 3) return;
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+
+  document.querySelectorAll('.step-pill').forEach((p, i) => {
+    p.classList.remove('active');
+    if (i + 1 < n) p.classList.add('completed');
+    else p.classList.remove('completed');
+  });
+  document.getElementById('pill-' + n).classList.add('active');
+  currentStep = n;
+
+  document.getElementById('configurator').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function validateStep1() {
+  if (state.selectedStyles.length === 0) {
+    alert('Please select at least one candle style before continuing.');
+    return;
+  }
+  const qty = parseInt(document.getElementById('qty-input').value) || 0;
+  if (qty < 1) {
+    alert('Please enter a valid quantity.');
+    return;
+  }
+  state.qty = qty;
+  state.fragrances = document.getElementById('fragrance-count').value;
+  goToStep(2);
+}
+
+function validateStep2() {
+  const fn = document.getElementById('first-name').value.trim();
+  const ln = document.getElementById('last-name').value.trim();
+  const em = document.getElementById('email').value.trim();
+  const ph = document.getElementById('phone').value.trim();
+  const loc = document.getElementById('delivery-location').value.trim();
+  const date = document.getElementById('delivery-date').value;
+
+  if (!fn || !ln) { alert('Please enter your full name.'); return; }
+  if (!em || !em.includes('@')) { alert('Please enter a valid email address.'); return; }
+  if (!ph) { alert('Please enter your phone number.'); return; }
+  if (!loc) { alert('Please enter your delivery location.'); return; }
+  if (!date) { alert('Please select when you need your candles.'); return; }
+
+  state.firstName = fn; state.lastName = ln;
+  state.email = em; state.phone = ph;
+  state.deliveryLocation = loc; state.deliveryDate = date;
+  state.totalQty = document.getElementById('total-qty').value;
+  state.totalFragrances = document.getElementById('total-fragrances').value;
+  state.notes = document.getElementById('notes').value;
+
+  buildReview();
+  goToStep(3);
+}
+
+// ── REVIEW BUILDER ────────────────────────────────────────────────────────
+
+function buildReview() {
+  const qty = state.qty;
+  const isEnterprise = qty >= 1000;
+
+  // Enterprise banner
+  document.getElementById('enterprise-banner').classList.toggle('visible', isEnterprise);
+
+  // Styles
+  const stylesHtml = state.selectedStyles.map(code => {
+    const s = STYLES.find(x => x.code === code);
+    return `<div class="review-row">
+      <span class="review-key"><strong style="color:var(--gold);">${s.code}</strong> &nbsp;${s.name}</span>
+      <span class="review-val">${s.price ? `$${s.price}/unit est.` : 'Custom quote'}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('review-styles').innerHTML = stylesHtml ||
+    '<div class="review-row"><span class="review-key">No styles selected</span></div>';
+
+  // Artwork
+  document.getElementById('review-artwork').innerHTML = `
+    <div class="review-row"><span class="review-key">Logo uploaded</span><span class="review-val">${state.logoFile ? '✓ Yes' : 'Not uploaded — design team will assist'}</span></div>
+    <div class="review-row"><span class="review-key">Logo placement</span><span class="review-val">${capitalize(state.logoPosition)}</span></div>
+    <div class="review-row"><span class="review-key">Proof preference</span><span class="review-val">${state.proofPreference === 'yes' ? 'Send proof before production' : 'Proceed without proof'}</span></div>
+  `;
+
+  // Contact
+  document.getElementById('review-contact').innerHTML = `
+    <div class="review-row"><span class="review-key">Name</span><span class="review-val">${state.firstName} ${state.lastName}</span></div>
+    <div class="review-row"><span class="review-key">Email</span><span class="review-val">${state.email}</span></div>
+    <div class="review-row"><span class="review-key">Phone</span><span class="review-val">${state.phone}</span></div>
+    <div class="review-row"><span class="review-key">Delivery location</span><span class="review-val">${state.deliveryLocation}</span></div>
+  `;
+
+  // Order
+  document.getElementById('review-order').innerHTML = `
+    <div class="review-row"><span class="review-key">Quantity per style</span><span class="review-val">${parseInt(state.qty).toLocaleString()} units</span></div>
+    <div class="review-row"><span class="review-key">Total candles</span><span class="review-val">${state.totalQty ? parseInt(state.totalQty).toLocaleString() + ' units' : 'As per style quantity'}</span></div>
+    <div class="review-row"><span class="review-key">Fragrances</span><span class="review-val">${state.fragrances || state.totalFragrances || 'Not specified'}</span></div>
+    <div class="review-row"><span class="review-key">Needed by</span><span class="review-val">${formatDate(state.deliveryDate)}</span></div>
+    ${state.notes ? `<div class="review-row"><span class="review-key">Notes</span><span class="review-val" style="font-style:italic;">${state.notes.substring(0,80)}${state.notes.length > 80 ? '…' : ''}</span></div>` : ''}
+  `;
+
+  // Packaging
+  const pkgHtml = state.packagingSelected.length > 0
+    ? state.packagingSelected.map(code => {
+        const p = PACKAGING.find(x => x.code === code);
+        return `<div class="review-row"><span class="review-key"><strong style="color:var(--gold);">${p.code}</strong> &nbsp;${p.label}</span><span class="review-val">Included</span></div>`;
+      }).join('')
+    : '<div class="review-row"><span class="review-key">No packaging additions selected</span><span class="review-val" style="color:var(--cream-dim);">—</span></div>';
+  document.getElementById('review-packaging').innerHTML = pkgHtml;
+
+  // Total
+  const lastCode = state.selectedStyles[state.selectedStyles.length - 1];
+  const s = STYLES.find(x => x.code === lastCode);
+  let totalHtml = '—', totalNote = 'Final pricing confirmed in quote';
+  if (s && s.price && !isEnterprise) {
+    let low = s.price * 0.82;
+    let high = s.price;
+    const numQty = parseInt(state.qty);
+    const lowTotal = Math.round(low * numQty);
+    const highTotal = Math.round(high * numQty);
+    totalHtml = `$${lowTotal.toLocaleString()}–$${highTotal.toLocaleString()}`;
+    totalNote = `Estimated range for ${numQty.toLocaleString()} units · Final quote within 24hrs`;
+  } else if (isEnterprise) {
+    totalHtml = 'Enterprise';
+    totalNote = 'Custom pricing — our team will be in touch';
+  }
+  document.getElementById('review-total-val').textContent = totalHtml;
+  document.getElementById('review-total-note').textContent = totalNote;
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function formatDate(d) {
+  if (!d) return 'Not specified';
+  try {
+    return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  } catch { return d; }
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────
+
+function submitForm() {
+  document.querySelectorAll('.step-panel').forEach(p => p.style.display = 'none');
+  document.querySelector('.progress-nav').style.display = 'none';
+  document.getElementById('success-screen').classList.add('visible');
+  document.getElementById('configurator').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetForm() {
+  state = {
+    selectedStyles: [], logoFile: null, logoPosition: 'center', qty: 100, fragrances: '',
+    proofPreference: 'yes', firstName: '', lastName: '', email: '', phone: '',
+    deliveryLocation: '', deliveryDate: '', totalQty: '', totalFragrances: '',
+    packagingSelected: [], notes: '',
+  };
+  document.getElementById('success-screen').classList.remove('visible');
+  document.querySelectorAll('.step-panel').forEach(p => { p.style.display = ''; });
+  document.querySelector('.progress-nav').style.display = '';
+  renderStyleGrid();
+  renderPackaging();
+  updatePreview();
+  updatePrice();
+  goToStep(1);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+
+renderStyleGrid();
+renderPackaging();
+
+// Set min date for delivery to today
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('delivery-date').min = today;
+
+</script>
+</body>
+</html>
